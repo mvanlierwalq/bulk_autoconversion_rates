@@ -108,7 +108,7 @@ CONTAINS
     real, intent(out) :: prr_wau,pnr_wau, pnc_wau
     real :: pi,rho_w,am_r,bm_r,r1,obmr,d0r,d0c
     real :: nu_c,lamc,xdc
-    real :: dc_g,dc_b,zeta1,zeta,taud,tau
+    real :: dc_g,dc_b,zeta1,zeta,taud,tau, mvd_c
     integer :: n,nu_ci
 
     !real :: wgamma,gammln
@@ -178,7 +178,10 @@ CONTAINS
           pnr_wau = prr_wau / (am_r*nu_c*D0r*D0r*D0r)              ! RAIN2M       
 
           pnc_wau = prr_wau/(am_r*mvd_c*mvd_c*mvd_c)    !..ncloud auto
-
+         else
+          prr_wau = 0.
+          pnr_wau = 0.
+          pnc_wau = 0.
          endif
 
          end subroutine berry_reinhardt_autoconversion

@@ -8,7 +8,8 @@ REAL, ALLOCATABLE, DIMENSION(:)      :: qc, nc
 REAL, ALLOCATABLE, DIMENSION(:,:)  :: mvd, &
                                       qauto_br, nauto_br, &
                                       qauto_kk, nauto_kk, &
-                                      qauto_sb, nauto_sb
+                                      qauto_sb, nauto_sb, &
+                                      ncauto_br, ncauto_kk, ncauto_sb
 
 REAL        :: qc_max, qc_min, nc_max, nc_min, qr, qstep, nstep
 !..
@@ -18,6 +19,7 @@ INTEGER                   :: mcid, qdimid, ndimid, &
                              qauto_br_varid, nauto_br_varid, &
                              qauto_sb_varid, nauto_sb_varid, &
                              qauto_kk_varid, nauto_kk_varid, &
+                             ncauto_br_varid, ncauto_sb_varid, ncauto_kk_varid, &
                              i,j
 
 INTEGER, PARAMETER :: nresq=200, nresn=200, spacy=1
@@ -30,6 +32,9 @@ ALLOCATE( qauto_kk(nresn,nresq) )
 ALLOCATE( nauto_kk(nresn,nresq) )
 ALLOCATE( qauto_br(nresn,nresq) )
 ALLOCATE( nauto_br(nresn,nresq) )
+ALLOCATE( ncauto_sb(nresn,nresq) )
+ALLOCATE( ncauto_br(nresn,nresq) )
+ALLOCATE( ncauto_kk(nresn,nresq) )
 ALLOCATE( mvd(nresn,nresq)   )
 
 ! auto and nauto rates below are mass and number rates for RAIN (not cloud, mass rate is equal in
@@ -73,16 +78,16 @@ DO i = 1,nresq   !..q loop
   DO j = 1,nresn   !..n loop
     ! calculate mean size, use this to filter out implausible qc and nc combinations
     mvd(j,i) = (6.*qc(i)/(nc(j)*1000.*3.14))**0.333333
-    CALL berry_reinhardt_autoconversion(qc(i),nc(j),qauto_br(j,i),nauto_br(j,i))
-    CALL kk2000_autoconversion(qc(i), nc(j), qauto_kk(j,i),nauto_kk(j,i))
-    CALL sb2001_autoconversion(qc(i), nc(j), qr, qauto_sb(j,i), nauto_sb(j,i))
+    CALL berry_reinhardt_autoconversion(qc(i),nc(j),qauto_br(j,i),nauto_br(j,i),ncauto_br(j,i))
+    CALL kk2000_autoconversion(qc(i), nc(j), qauto_kk(j,i),nauto_kk(j,i),ncauto_kk(j,i))
+    CALL sb2001_autoconversion(qc(i), nc(j), qr, qauto_sb(j,i), nauto_sb(j,i),ncauto_sb(j,i))
   ENDDO
 ENDDO
 
 
 
 !..Output to NetCDF
-CALL check(nf90_create( path='autoconversion_grid_01.nc', cmode=nf90_clobber, ncid=mcid))
+CALL check(nf90_create( path='autoconversion_grid_log_02.nc', cmode=nf90_clobber, ncid=mcid))
 !..
 CALL check(nf90_def_dim( mcid, 'qc', nresq, qdimid))
 CALL check(nf90_def_dim( mcid, 'nc', nresn, ndimid))
@@ -95,6 +100,9 @@ CALL check(nf90_def_var( mcid, 'qauto_sb', NF90_FLOAT, [ndimid, qdimid], qauto_s
 CALL check(nf90_def_var( mcid, 'nauto_sb', NF90_FLOAT, [ndimid, qdimid], nauto_sb_varid))
 CALL check(nf90_def_var( mcid, 'qauto_kk', NF90_FLOAT, [ndimid, qdimid], qauto_kk_varid))
 CALL check(nf90_def_var( mcid, 'nauto_kk', NF90_FLOAT, [ndimid, qdimid], nauto_kk_varid))
+CALL check(NF90_DEF_VAR( mcid, 'ncauto_br', NF90_FLOAT, [ndimid, qdimid], ncauto_br_varid))
+CALL check(NF90_DEF_VAR( mcid, 'ncauto_sb', NF90_FLOAT, [ndimid, qdimid], ncauto_sb_varid))
+CALL check(NF90_DEF_VAR( mcid, 'ncauto_kk', NF90_FLOAT, [ndimid, qdimid], ncauto_kk_varid))
 CALL check(nf90_def_var( mcid, 'mvd', NF90_FLOAT, [ndimid,qdimid], mvd_varid))
 !..
 CALL check(nf90_enddef( mcid ))
@@ -107,6 +115,9 @@ CALL check(nf90_put_var( mcid, qauto_kk_varid, qauto_kk) )
 CALL check(nf90_put_var( mcid, nauto_kk_varid, nauto_kk) )
 CALL check(nf90_put_var( mcid, qauto_sb_varid, qauto_sb) )
 CALL check(nf90_put_var( mcid, nauto_sb_varid, nauto_sb) )
+CALL check(nf90_put_var( mcid, ncauto_br_varid, ncauto_br) )
+CALL check(nf90_put_var( mcid, ncauto_sb_varid, ncauto_sb) )
+CALL check(nf90_put_var( mcid, ncauto_kk_varid, ncauto_kk) )
 CALL check(nf90_put_var( mcid, mvd_varid, mvd) )
 !..
 CALL check(nf90_close( mcid ))
@@ -120,6 +131,9 @@ DEALLOCATE( qauto_sb )
 DEALLOCATE( nauto_sb )
 DEALLOCATE( qauto_br )
 DEALLOCATE( nauto_br )
+DEALLOCATE( ncauto_br )
+DEALLOCATE( ncauto_sb )
+DEALLOCATE( ncauto_kk )
 DEALLOCATE( mvd)
 
 CONTAINS

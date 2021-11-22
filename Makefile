@@ -3,11 +3,11 @@
 FC = gfortran
 #FCFLAGS = -O0 -g -fbacktrace -fdefault-real-8 -fdefault-double-8
 FCFLAGS = -O2 -march=native -fdefault-real-8 -fdefault-double-8
-FLIBS = -lnetcdf 
+FLIBS = -lnetcdf -lnetcdff
 #LPATH = -L/home/marcus/local/lib
 #IPATH = -I/home/marcus/local/include
-LPATH = -L/home/mvanlier/netcdf_local/netcdf_install/lib
-IPATH = -I/home/mvanlier/netcdf_local/netcdf_install/include
+LPATH = -L/usr/local/lib
+IPATH = -I/usr/local/include
 OBJS = run_autoconversion_mod.o
 MAIN = driver.f90
 
